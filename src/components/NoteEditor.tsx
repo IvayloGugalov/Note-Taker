@@ -1,5 +1,13 @@
 import { useState } from "react";
 
+import {
+  Box,
+  Button,
+  Heading,
+  Input,
+  VStack,
+  useColorModeValue
+} from '@chakra-ui/react';
 import CodeMirror from "@uiw/react-codemirror";
 import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
 import { languages } from "@codemirror/language-data";
@@ -13,45 +21,81 @@ export const NoteEditor = ({
   const [title, setTitle] = useState<string>("");
 
   return (
-    <div className="card mt-5 border border-gray-200 bg-base-100 shadow-xl">
-      <div className="card-body py-4">
-        <h2 className="card-title">
-          <input
+    <VStack
+      width='100%'
+      display='flex'
+      px='8'
+      py='4'
+      flexDirection='column'
+      position='relative'
+      border='2px'
+      borderColor={useColorModeValue('gray.200', 'gray.400')}
+      rounded='xl'
+      shadow='xl'
+      _focus={{ outline: '2px solid transparent', outlineOffset: '2px'}}
+    >
+      <Box
+        width='full'
+        display='flex'
+        flex='1 1 auto'
+        flexDirection='column'
+        gap='4'
+      >
+        <Heading
+          as='h2'
+          gap='4'
+          fontWeight='600'
+        >
+          <Input
             type="text"
             placeholder="Note title"
-            className="input-primary input input-md w-full font-bold"
             value={title}
             onChange={(e) => setTitle(e.currentTarget.value)}
           />
-        </h2>
+        </Heading>
         <CodeMirror
           value={code}
-          width="500px"
           minWidth="100%"
-          minHeight="25vh"
+          minHeight="10rem"
           extensions={[
             markdown({ base: markdownLanguage, codeLanguages: languages }),
           ]}
           onChange={(value) => setCode(value)}
-          className="border border-gray-300"
+          theme={useColorModeValue('light', 'dark')}
         />
-      </div>
-      <div className="card-actions justify-start ml-8 mb-2">
-        <button
+      </Box>
+      <Box
+        width='100%'
+        justifyContent='flex-start'
+        display='flex'
+        flexWrap='wrap'
+        alignItems='flex-start'
+        gap='0.5rem'
+      >
+        <Button
+          width='24'
+          mt='2'
+          display='inline-flex'
+          cursor='pointer'
+          justifyContent='center'
+          alignItems='center'
+          colorScheme='cyan'
+          variant='outline'
           onClick={() => {
-            onSave({
-              title,
-              content: code,
-            });
-            setCode("");
-            setTitle("");
+            if (title.trim().length > 0) {
+              onSave({
+                title,
+                content: code,
+              });
+              setCode("");
+              setTitle("");
+            }
           }}
-          className="btn-primary btn btn-sm w-24"
-          disabled={title.trim().length === 0 || code.trim().length === 0}
+          isDisabled={title.trim().length === 0 || code.trim().length === 0}
         >
           Save
-        </button>
-      </div>
-    </div>
+        </Button>
+      </Box>
+    </VStack>
   );
 };

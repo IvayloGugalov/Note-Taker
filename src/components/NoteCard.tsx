@@ -1,7 +1,20 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
+
+import {
+  Heading,
+  Box,
+  Stack,
+  Button,
+  Collapse,
+  useColorModeValue,
+  HStack,
+} from '@chakra-ui/react';
+import {
+  ChevronDownIcon,
+  ChevronUpIcon
+} from '@chakra-ui/icons';
 
 import ReactMarkdown from "react-markdown";
-
 import { type RouterOutputs } from "../utils/api";
 
 type Note = RouterOutputs["note"]["getAll"][0];
@@ -13,30 +26,73 @@ export const NoteCard = ({
   note: Note;
   onDelete: () => void;
 }) => {
-  const [isExpanded, setIsExpanded] = useState<boolean>(true);
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  const obj = useRef(null);
 
   return (
-    <div className="card mb-4 border border-gray-200 bg-base-100 shadow-xl">
-      <div className="card-body m-0 p-3">
-        <div
-          className={`collapse-arrow ${
-            isExpanded ? "collapse-open" : ""
-          } collapse`}
+    <Box
+      ref={obj}
+      mb={'4'}
+      border='1px'
+      borderColor={'gray.200'}
+      bg={useColorModeValue('white', 'gray.900')}
+      boxShadow={'2xl'}
+      rounded={'lg'}
+      px={6}
+      py={4}
+    >
+      <Stack p={'0'} m={'0'}>
+        <HStack
+          justifyContent={'space-between'}
+          cursor='pointer'
           onClick={() => setIsExpanded(!isExpanded)}
         >
-          <div className="collapse-title text-xl font-bold">{note.title}</div>
-          <div className="collapse-content pb-1">
-            <article className="prose lg:prose-xl">
+          <Button
+            size={'md'}
+            w='full'
+            py={'7'}
+            justifyContent={'space-between'}
+            rightIcon={isExpanded ? <ChevronUpIcon boxSize={'6'} /> : <ChevronDownIcon boxSize={'6'} />}
+            aria-label={'Open Note card'}
+            transitionDuration="200ms"
+            bg={isExpanded
+              ? useColorModeValue('blackAlpha', 'whiteAlpha.300')
+              : useColorModeValue('blackAlpha', 'whiteAlpha.200')}
+            color={useColorModeValue('blackAlpha', 'whiteAlpha.800')}
+          >
+            <Heading as='h3' size={'lg'}>{note.title}</Heading>
+          </Button>
+        </HStack>
+
+        <Collapse
+          in={isExpanded}
+          animateOpacity
+        >
+          <Box
+            rounded={'md'}
+            my={'2'}
+            p={'4'}
+            bg={useColorModeValue('blackAlpha.200', 'whiteAlpha.200')}
+          >
+            <article>
               <ReactMarkdown>{note.content}</ReactMarkdown>
             </article>
-          </div>
-        </div>
-        <div className="card-actions mx-2 flex justify-end">
-          <button className="btn-warning btn-xs btn px-5" onClick={onDelete}>
+          </Box>
+        </Collapse>
+
+        <Box display={'flex'} justifyContent={'end'}>
+          <Button
+            px='5'
+            mt={'2'}
+            size={'sm'}
+            fontSize='md'
+            onClick={onDelete}
+            colorScheme="yellow"
+          >
             Delete
-          </button>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </Box>
+      </Stack>
+    </Box>
   );
 };

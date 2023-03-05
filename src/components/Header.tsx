@@ -1,54 +1,109 @@
+import React from 'react'
 import { signIn, signOut, useSession } from "next-auth/react";
 
-import React from 'react'
+import {
+  Box,
+  useColorModeValue,
+  useDisclosure,
+  useColorMode,
+  Flex,
+  IconButton,
+  HStack,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  Button,
+  Avatar,
+  Stack,
+  Heading
+} from '@chakra-ui/react';
+import { HamburgerIcon, CloseIcon, MoonIcon, SunIcon } from '@chakra-ui/icons';
 
 export const Header = () => {
   const { data: sessionData}  = useSession();
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { colorMode, toggleColorMode } = useColorMode();
 
   return (
-    <div className="navbar bg-primary text-primary-content">
-      <div className="flex-1 pl-5 text-3xl font-bold">
-        {sessionData?.user?.name ? `Notes for ${sessionData.user.name}` : ""}
-      </div>
-      <div className="flex-none gap-2">
-        <div className="dropdown-end dropdown-hover dropdown mr-2 mt-1">
-          {sessionData?.user ? (
-            <label
-              tabIndex={0}
-              className="btn-ghost btn-circle avatar btn"
-            >
-              <div className="w-10 rounded-full">
-                <img
-                  src={sessionData?.user?.image ?? ""}
-                  alt={sessionData?.user?.name ?? ""}
-                />
-              </div>
-            </label>
-          ) : (
-            <button
-              className="btn-ghost rounded-btn btn"
-              onClick={() => void signIn()}
-            >
-              Sign in
-            </button>
-          )}
-          {sessionData?.user && (
-            <ul
-              tabIndex={0}
-              className='-mt-1 dropdown-content menu p-2 bg-base-100 rounded-box w-40 shadow-lg'
-            >
-              <li>
-                <label
-                  className="btn-ghost btn text-black text-xs"
-                  onClick={() => void signOut()}
+    <Box bg={useColorModeValue('skyblue', 'blue.900')} px={4}>
+      <Flex height={16} alignItems={'center'} justifyContent={'space-between'}>
+        <IconButton
+          size={'md'}
+          icon={isOpen ? <CloseIcon /> : <HamburgerIcon />}
+          aria-label={'Open Menu'}
+          display={{ md: 'none' }}
+          onClick={isOpen ? onClose : onOpen}
+        />
+        <HStack spacing={8} alignItems={'center'}>
+          <HStack
+            as={'nav'}
+            spacing={4}
+            display={{ base: 'none', md: 'flex' }}
+          >
+            {/* Add Navlinks here */}
+          </HStack>
+          <Heading as='h3' size={{ base: 'md', md:'xl'}} color={useColorModeValue('black', 'white')} >
+              {sessionData?.user?.name ? `Notes for ${sessionData.user.name}` : ""}
+          </Heading>
+        </HStack>
+
+        <Flex alignItems={'center'}>
+          <Stack direction={'row'} spacing={8} alignItems='center'>
+            <Button onClick={toggleColorMode}>
+              {colorMode === 'light' ? <MoonIcon /> : <SunIcon />}
+            </Button>
+            {sessionData?.user ? (
+              <Menu isLazy>
+                <MenuButton
+                  as={Button}
+                  rounded={'full'}
+                  variant={'link'}
+                  cursor={'pointer'}
+                  _active={{ boxShadow: 'outline' }}
+                  transition='all 0.2s'
+                  minW={0}
                 >
-                  Sign out
-                </label>
-              </li>
-            </ul>
-          )}
-        </div>
-      </div>
-    </div>
+                  <Avatar
+                    size={'md'}
+                    name={sessionData?.user?.name ?? ""}
+                    src={sessionData?.user?.image ?? ""}
+                  />
+                </MenuButton>
+                <MenuList py='1' px='2'>
+                  <MenuItem
+                    w="100%"
+                    _hover={{ bg: useColorModeValue('gray.200', 'gray.600') }}
+                    rounded='md'
+                    onClick={() => void signOut()}
+                  >
+                    Sign out
+                  </MenuItem>
+                </MenuList>
+              </Menu>
+            ) : (
+              <Button
+                onClick={() => void signIn()}
+                rounded='xl'
+                cursor={'pointer'}
+                _hover={{
+                  bg: useColorModeValue('white', 'gray.500'),
+                  color: useColorModeValue('teal.400', 'teal.200')
+                }}
+              >
+                Sign in
+              </Button>
+            )}
+          </Stack>
+        </Flex>
+      </Flex>
+      {isOpen ? (
+        <Box pb={4} display={{ md: 'none' }}>
+          <Stack as={'nav'} spacing={4}>
+            {/* Add Navlinks here */}
+          </Stack>
+        </Box>
+      ) : null}
+    </Box>
   )
 };
