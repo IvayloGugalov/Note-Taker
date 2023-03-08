@@ -1,5 +1,7 @@
 import React from 'react'
-import { signIn, signOut, useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
+
+import { useRouter } from 'next/router';
 
 import {
   Box,
@@ -21,6 +23,7 @@ import {
 import { HamburgerIcon, CloseIcon, MoonIcon, SunIcon } from '@chakra-ui/icons';
 
 export const Header = () => {
+  const router = useRouter();
   const { data: sessionData}  = useSession();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { colorMode, toggleColorMode } = useColorMode();
@@ -83,13 +86,13 @@ export const Header = () => {
               </Menu>
             ) : (
               <Button
-                onClick={() => void signIn()}
                 rounded='xl'
                 cursor={'pointer'}
                 _hover={{
                   bg: useColorModeValue('white', 'gray.500'),
                   color: useColorModeValue('teal.400', 'teal.200')
                 }}
+                onClick={() => router.push('/auth/signin')}
               >
                 Sign in
               </Button>

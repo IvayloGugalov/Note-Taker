@@ -11,6 +11,7 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { env } from "~/env.mjs";
 import { prisma } from "~/server/db";
 import { validateLoginForm } from "services/validation/validateForm";
+import { STATUS } from "../../constants";
 
 const AuthError = class AuthError extends Error {}
 
@@ -24,6 +25,7 @@ declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
       id: string;
+      status: Record<keyof typeof STATUS, boolean>
       // ...other properties
       // role: UserRole;
     } & DefaultSession["user"];
@@ -33,6 +35,13 @@ declare module "next-auth" {
   //   // ...other properties
   //   // role: UserRole;
   // }
+  // interface User extends InstanceType<typeof prisma.Prom> {}
+}
+
+declare module 'next-auth/jwt' {
+  interface JWT {
+    status?: number
+  }
 }
 
 /**
@@ -41,18 +50,50 @@ declare module "next-auth" {
  * @see https://next-auth.js.org/configuration/options
  */
 export const authOptions: NextAuthOptions = {
+  pages: {
+    signIn: "/auth/signIn",
+    error: "/auth/error"
+  },
+  session: {
+    strategy: "jwt",
+    maxAge: 24 * 60 * 60
+  },
   callbacks: {
-    session({ session, user }) {
-      if (session.user) {
-        session.user.id = user.id;
+    async session({ session, user, token }) {
+      if (session.user && user) {
+        session.user.id = user?.id;
         // session.user.role = user.role; <-- put other properties on the session here
+      } else if (token.sub) {
+        /**
+         * All providers will come trhough here as we have enabled the session stategy to be JWT
+        **/
+        session.user.id = token.sub
+        // session.user.role = token.sub; <-- decode role from token here
+      } else {
+        throw new Error(JSON.stringify('No user nor token present!!!'))
       }
       return session;
+    },
+    async jwt({token, user}) {
+      // TODO:
+      if (user) {
+        const emailVerifiedDate = await prisma.user.findFirst({
+          where: {
+            email: user.email
+          }
+        }).then(x => x?.emailVerified ?? 0);
+
+        let status: number = 0;
+        token.status = status
+      }
+      return token
     },
   },
   adapter: PrismaAdapter(prisma),
   providers: [
     GithubProvider({
+      id: 'github',
+      name: "GitHub",
       clientId: env.GITHUB_CLIENT_ID,
       clientSecret: env.GITHUB_CLIENT_SECRET,
     }),
@@ -66,31 +107,41 @@ export const authOptions: NextAuthOptions = {
      * @see https://next-auth.js.org/providers/github
      */
     CredentialsProvider({
-      id: 'login',
+      id: 'credentials',
+      type: 'credentials',
+      name: 'Credentials',
       credentials: {
-        username: {}, password: {}
+        email: {}, password: {}
       },
-      async authorize(form = {} as any) {
-        const formErrors = validateLoginForm(form)
-        const { username: name, password } = form
+      async authorize(credentials: Record<"email" | "password", string> | undefined, req: any) {
+        const formErrors = validateLoginForm(
+          {email: credentials?.email, password: credentials?.password}
+        )
+
         try {
           if (Object.keys(formErrors).length) {
             throw new AuthError(JSON.stringify(formErrors))
           }
+          const { email, password } = credentials as {
+            email: string,
+            password: string
+          };
           const user = await prisma.user.findFirst({
             where: {
-              name: name
+              email: email
             }
           });
+
           if (!user) {
-            formErrors.username = 'INCORRECT_USERNAME'
+            formErrors.email = 'EMAIL_DOESNT_EXIST'
             throw new AuthError(JSON.stringify(formErrors))
           }
-          if (!await bcrypt.compare(password, user.password)) {
+          if (user.password && !await bcrypt.compare(password, user.password)) {
             formErrors.password = 'INCORRECT_PASSWORD'
             throw new AuthError(JSON.stringify(formErrors))
           }
-          return user
+
+          return user;
         } catch(err) {
           if (err instanceof AuthError) throw err
           console.error(err)

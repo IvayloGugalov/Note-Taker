@@ -16,8 +16,8 @@ interface RegistrationForm {
   username: string
   password: string
   password2: string
-  fullname: string
-  companyname: string
+  // fullname: string
+  // companyname?: string
 }
 
 const validateRegistrationForm = (form: RegistrationForm) => {
@@ -35,26 +35,26 @@ const validateRegistrationForm = (form: RegistrationForm) => {
   if (!form.password2) errors.password2 = 'BLANK_PASSWORD2'
   else if (form.password2 !== form.password) errors.password2 = 'PASSWORD_DOESNT_MATCH'
 
-  if (!form.fullname) errors.fullname = 'BLANK_FULLNAME'
-  else if (!validateName(form.fullname)) errors.fullname = 'INVALID_FULLNAME'
+  // if (!form.fullname) errors.fullname = 'BLANK_FULLNAME'
+  // else if (!validateName(form.fullname)) errors.fullname = 'INVALID_FULLNAME'
 
-  if (!form.companyname) errors.companyname = 'BLANK_COMPANYNAME'
-  else if (!validateName(form.companyname)) errors.companyname = 'INVALID_COMPANYNAME'
+  // if (!form.companyname) errors.companyname = 'BLANK_COMPANYNAME'
+  // else if (!validateName(form.companyname)) errors.companyname = 'INVALID_COMPANYNAME'
 
   return errors
 }
 
 
 interface LoginForm {
-  username: string
-  password: string
+  email: string | undefined
+  password: string | undefined
 }
 
 const validateLoginForm = (form: LoginForm) => {
   const errors: FormErrors = {}
 
-  if (!form.username) errors.username = 'BLANK_USERNAME'
-  else if (!validateUsername(form.username)) errors.username = 'INCORRECT_USERNAME'
+  if (!form.email) errors.email = 'BLANK_EMAIL'
+  else if (!validateEmail(form.email)) errors.email = 'INVALID_EMAIL'
 
   if (!form.password) errors.password = 'BLANK_PASSWORD'
 
