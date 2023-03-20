@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import { useSession } from "next-auth/react"
 import { SignInPanel } from "~/components/SignInPanel";
@@ -5,23 +7,27 @@ import { SignUpPanel } from "~/components/SignUpPanel";
 import { useRouter } from 'next/router';
 import { Flex, Stack, Image } from "@chakra-ui/react";
 
-export default function SignIn() {
+export default function SignIn(): JSX.Element {
   const session = useSession();
   const router = useRouter();
   const [showSignUp, setShowSignUp] = useState<boolean>(false);
 
+  function onChange(data: boolean) {
+    setShowSignUp(data)
+  }
+
   if (session?.data?.user) {
     router.back();
-    return router.back();
+    router.back();
   }
 
   return (
     <Stack minH={'100vh'} direction={{ base: 'column', md: 'row' }}>
       <Flex p={8} flex={1} align={'center'} justify={'center'} overflow={'hidden'} >
         {showSignUp ? (
-          <SignUpPanel setShowSignUp={setShowSignUp} />
+          <SignUpPanel onChange={onChange} />
         ) : (
-          <SignInPanel setShowSignUp={setShowSignUp} />
+          <SignInPanel onChange={onChange} />
         )}
       </Flex>
 

@@ -15,10 +15,10 @@ import {
 import { FormErrors, RegistrationForm, validateRegistrationForm } from 'services/validation/validateForm';
 
 interface SignUpPanelProps {
-  setShowSignUp: React.Dispatch<React.SetStateAction<boolean>>
+  onChange: (data: boolean) => void
 }
 
-export const SignUpPanel = ({ setShowSignUp }: SignUpPanelProps) => {
+export const SignUpPanel = ({ onChange }: SignUpPanelProps) => {
 
   const [registrationForm, setRegistrationForm] = useState<RegistrationForm>({
     email: 'test-mail@abv.bg',
@@ -50,7 +50,7 @@ export const SignUpPanel = ({ setShowSignUp }: SignUpPanelProps) => {
 
   return (
     <Flex
-      id='signup'
+      id='signUp'
       p={8}
       flex={1}
       align={'center'}
@@ -93,7 +93,7 @@ export const SignUpPanel = ({ setShowSignUp }: SignUpPanelProps) => {
           w={'full'}
           align={'center'}
         >
-          <Link onClick={() => setShowSignUp(false)} color={'blue.500'}>Register with email</Link>
+          <Link onClick={() => onChange(false)} color={'blue.500'}>Register with email</Link>
         </Stack>
       </Stack>
     </Flex>
